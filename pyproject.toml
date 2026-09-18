@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "expert-hunter"
+version = "0.1.0"
+description = "Connito SN102: community proposals for the next expert the subnet trains."
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2",
+    "PyYAML>=6",
+]
+
+[project.optional-dependencies]
+# The "can the data run" check streams real rows from the Hub.
+network = [
+    "datasets>=3",
+]
+test = [
+    "pytest>=8",
+]
+
+[project.scripts]
+expert-hunter-check = "expert_hunter.check:run"
+expert-hunter-export = "expert_hunter.export:main"
+expert-hunter-leaderboard = "expert_hunter.leaderboard:main"
+
+[tool.setuptools.packages.find]
+include = ["expert_hunter*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q"
+markers = [
+    "network: streams datasets from the HuggingFace Hub (run with --network)",
+]

@@ -1,0 +1,68 @@
+# Copy this directory to proposals/<your name>/ and fill it in.
+# doc/GUIDE.md explains every field. Delete these comments if you like.
+
+# The task's name on the subnet. exp_ followed by lowercase words joined with
+# single underscores; it must match the directory name.
+name: exp_your_task_name
+
+# One line, shown on the leaderboard.
+title: What the expert gets good at
+
+proposer:
+  github: your-github-handle     # the account opening the PR
+  contact: null                   # optional: Discord handle, email, or hotkey
+
+# Two or three sentences: what the new expert would be able to do.
+summary: >
+  ...
+
+# Why the subnet should spend a training window on this rather than something
+# else. Who would use the expert? What does the base model do badly today?
+motivation: >
+  ...
+
+data:
+  # What miners train on. Same fields as cycle-api's task config.
+  # Weights must add up to 1.0. Up to four sources.
+  dataset_sources:
+    - path: org/dataset-name      # HuggingFace dataset id; public and NOT gated
+      name: null                  # the dataset's config/subset, if it has several
+      split: train                # write it out even when it is `train`
+      weight: 0.5
+      # How the rows become training text. Use ONE of these two:
+      #   text_column   — the column already is the text
+      #   text_template — join several columns, e.g. a question/answer corpus:
+      #                   text_template: "User: {question}\n\nAssistant: {answer}"
+      text_column: text
+      revision: null              # optional: a 40-character commit sha to pin
+      license: null               # e.g. cc-by-4.0
+
+    # Mixing in general text (c4) keeps the expert from forgetting everything
+    # else. Recommended, not required.
+    - path: allenai/c4
+      name: en
+      split: train
+      weight: 0.5
+      text_column: text
+      license: odc-by
+
+  sequence_length: 1024           # 1024, 2048 or 4096
+
+# How we will know the trained expert is better. At least one; up to five.
+benchmarks:
+  - name: my_benchmark            # a short label
+    harness: lm_eval              # lm_eval (preferred) or eval_loss
+    task: my_lm_eval_task         # the lm-evaluation-harness task name
+    num_fewshot: 0                # the few-shot count the benchmark is published with
+    metric: acc                   # the number to read, as lm-eval names it
+    higher_is_better: true
+    dataset:                      # where the scored questions live
+      path: org/benchmark-dataset
+      name: null
+      split: test
+    why: >
+      Why this benchmark measures what the expert is meant to learn.
+
+# How you know the benchmark's questions are not in the training data.
+contamination: >
+  ...

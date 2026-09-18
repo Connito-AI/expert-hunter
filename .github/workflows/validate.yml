@@ -1,0 +1,94 @@
+name: Validate proposal
+
+# Two jobs, and the second one's name matters: the leaderboard only ranks PRs
+# whose `data-can-run` check passed on their latest commit.
+#
+# `data-can-run` runs the checker from the BASE branch against the proposal
+# files from the PR. A proposal PR must not be able to change the code that
+# judges it — and the leaderboard also refuses any PR touching files outside
+# proposals/, so a PR that edits the checker is never ranked either.
+#
+# Plain `pull_request` (not `pull_request_target`): the token is read-only and
+# no secrets are exposed to code from forks. The report goes to the job summary,
+# which shows on the PR's checks tab without any write permission.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    name: proposal-file
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[test]"
+      - name: Schema check of every proposal
+        run: python -m expert_hunter.check
+      - name: Tests
+        run: pytest
+
+  data-can-run:
+    name: data-can-run
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checker (from the base branch)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          path: tool
+      - name: Proposal (from the pull request)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: pr
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install "./tool[network]"
+      - name: Find the proposals this PR adds or changes
+        id: changed
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          cd pr
+          if [ -n "$BASE" ]; then
+            dirs=$(git diff --name-only --diff-filter=AM "$BASE"...HEAD \
+                   | grep -E '^proposals/[^_/][^/]*/' | cut -d/ -f1-2 | sort -u | tr '\n' ' ')
+          else
+            dirs="examples/exp_biomed_pubmed"   # on main: keep the example honest
+          fi
+          echo "dirs=$dirs" >> "$GITHUB_OUTPUT"
+          echo "Proposals to check: ${dirs:-none}"
+      - name: Load the data the way a miner would
+        if: steps.changed.outputs.dirs != ''
+        env:
+          HF_HUB_DISABLE_PROGRESS_BARS: "1"
+        run: |
+          args=""
+          for d in ${{ steps.changed.outputs.dirs }}; do args="$args $PWD/pr/$d"; done
+          # Run from RUNNER_TEMP, not from pr/: `python -m` puts the working
+          # directory first on sys.path, so running inside pr/ would import the
+          # PR's own expert_hunter/ instead of the installed base-branch checker.
+          cd "$RUNNER_TEMP"
+          python -m expert_hunter.check $args --network --report "$RUNNER_TEMP/report.md" \
+            || status=$?
+          cat "$RUNNER_TEMP/report.md" >> "$GITHUB_STEP_SUMMARY"
+          exit ${status:-0}
+      - name: Nothing to check
+        if: steps.changed.outputs.dirs == ''
+        run: echo "This PR adds no proposal; nothing to load." >> "$GITHUB_STEP_SUMMARY"

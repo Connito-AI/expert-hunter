@@ -1,0 +1,72 @@
+# A worked example of a mix whose domain half is a QUESTION/ANSWER corpus:
+# `text_template` renders its columns into training text, so the dataset is
+# usable as published. That is the experiment repo's `corpora/metamathqa`
+# shape (`render.cpt.text_template`), here over a parquet-sharded corpus.
+#
+# NOT meta-math/MetaMathQA itself, although it is the corpus the experiment
+# repo uses: it is published as ONE 400 MB JSON file, so streaming it pulls the
+# whole file into memory on every miner. OpenMathInstruct-2 is the same kind of
+# data, sharded into parquet, which streams a row group at a time.
+#
+# It lives under examples/, so it never appears on the leaderboard; CI checks it
+# like a real proposal.
+name: exp_metamath_reasoning
+title: Math word-problem reasoning (OpenMathInstruct-2 + c4)
+
+proposer:
+  github: connito-ai
+  contact: null
+
+summary: >
+  Train on OpenMathInstruct-2's problems and worked solutions, mixed half and
+  half with general web text, so the new expert works through multi-step
+  arithmetic and algebra word problems instead of guessing an answer.
+
+motivation: >
+  Word-problem reasoning is the capability the subnet can most clearly
+  demonstrate, and GSM8K is the benchmark most people recognise. The experiment
+  repo's p2-math-sft row trains this domain on this base model, so a result
+  here can be read against our own math history rather than standing alone.
+
+data:
+  dataset_sources:
+    # Two columns, not one: `problem` is the question, `generated_solution` the
+    # worked answer. The template joins them the way ESFT's own prompt does, so
+    # the model is trained on the same shape it is later asked to produce.
+    # `train_1M` is the 1M-row slice; the full `train` split is 14M rows.
+    - path: nvidia/OpenMathInstruct-2
+      split: train_1M
+      weight: 0.5
+      text_template: "User: {problem}\n\nAssistant: {generated_solution}"
+      license: cc-by-4.0
+    # Replay, so the expert does not forget everything that is not arithmetic.
+    - path: allenai/c4
+      name: en
+      split: train
+      weight: 0.5
+      text_column: text
+      license: odc-by
+  sequence_length: 1024
+
+benchmarks:
+  - name: gsm8k
+    harness: lm_eval
+    task: gsm8k
+    num_fewshot: 8
+    metric: exact_match,strict-match
+    higher_is_better: true
+    dataset:
+      path: openai/gsm8k
+      name: main
+      split: test
+    why: >
+      Grade-school word problems, scored on the final answer; the standard
+      measure for exactly this kind of training, at the 8 shots DeepSeek
+      published its own numbers with.
+
+contamination: >
+  OpenMathInstruct-2's problems come from the GSM8K and MATH TRAIN splits and
+  from synthetic rewrites of them; the benchmark reads the GSM8K TEST split,
+  which is not in the training data. Training questions do resemble the test
+  items in style, the known limitation of every corpus of this kind — read the
+  result against other math-trained runs, not as an untrained baseline.
