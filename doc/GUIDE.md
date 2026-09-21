@@ -6,7 +6,7 @@ a dataset on HuggingFace, and a benchmark that shows whether training worked.
 
 - [What you are proposing](#what-you-are-proposing)
 - [Step by step](#step-by-step)
-- [Filling in proposal.yaml](#filling-in-proposalyaml)
+- [Filling in the proposal file](#filling-in-the-proposal-file)
 - [Choosing the data](#choosing-the-data)
 - [Choosing the benchmark](#choosing-the-benchmark)
 - [The checks, and how to fix a failure](#the-checks-and-how-to-fix-a-failure)
@@ -38,18 +38,21 @@ that repeats one of these needs a good reason.
 ## Step by step
 
 1. **Fork** this repository and clone your fork.
-2. **Copy the template** under a name of your own. Names start with `exp_`
-   and use lowercase words joined by underscores:
+2. **Copy the template into a folder named after your GitHub login**, and name
+   the file after your task. Task names start with `exp_` and use lowercase
+   words joined by underscores. If your login is `octocat`:
 
    ```bash
-   cp -r proposals/_template proposals/exp_finance_reports
+   mkdir -p proposals/octocat
+   cp template/exp_your_task_name.yaml proposals/octocat/exp_finance_reports.yaml
    ```
 
-3. **Fill in** `proposals/exp_finance_reports/proposal.yaml`
-   ([field by field below](#filling-in-proposalyaml)). Look at
-   [`examples/exp_biomed_pubmed/proposal.yaml`](../examples/exp_biomed_pubmed/proposal.yaml)
+3. **Fill in** `proposals/octocat/exp_finance_reports.yaml`
+   ([field by field below](#filling-in-the-proposal-file)). Set `proposer.github` to
+   your login and `name` to the file name. Look at
+   [`examples/connito-ai/exp_biomed_pubmed.yaml`](../examples/connito-ai/exp_biomed_pubmed.yaml)
    for a complete one, and
-   [`examples/exp_metamath_reasoning/proposal.yaml`](../examples/exp_metamath_reasoning/proposal.yaml)
+   [`examples/connito-ai/exp_metamath_reasoning.yaml`](../examples/connito-ai/exp_metamath_reasoning.yaml)
    for one whose corpus is question/answer pairs joined by a template.
 4. **Run the checks** (Python 3.10 or newer):
 
@@ -62,23 +65,35 @@ that repeats one of these needs a good reason.
    The second command downloads a sample of every dataset you named — the
    same way a miner's dataloader will — and prints what it found. Fix anything
    marked ✗ before you open the pull request.
-5. **Open one pull request** that adds only your `proposals/<name>/` directory
-   (a `README.md` next to the YAML is welcome for longer explanations). Fill in
-   the PR template's checklist.
-6. **Watch the checks** on your PR. When `data-can-run` is green, your
-   proposal appears on the [leaderboard](../LEADERBOARD.md) within six hours.
+5. **Open one pull request containing only that one file.** Fill in the PR
+   template's checklist. Anything longer you want to say — a custom benchmark,
+   how you built a dataset — goes in the PR description, not in extra files.
+6. **Watch the checks** on your PR. All three must be green before it can be
+   merged ([what each one means](#the-checks-and-how-to-fix-a-failure)).
 7. **Answer comments.** People will ask questions and suggest changes. Push
    fixes to the same branch; votes stay with the PR.
 
-One proposal per pull request. Two ideas → two PRs, so each gets its own votes.
+### What a pull request may contain
 
-## Filling in proposal.yaml
+| Allowed | Not allowed |
+|---|---|
+| Adding **one** file `proposals/<your-login>/<task-name>.yaml` | A second proposal in the same PR — open another PR |
+| Editing that file | A README, images, scripts, or any file that is not `.yaml` (`.yml` included) |
+| Deleting a proposal of your own (withdrawing it) | Anything in someone else's folder, even a typo fix — comment on their PR instead |
+| | Anything outside `proposals/<your-login>/`: code, docs, examples, workflows |
+
+The folder is compared with **the GitHub account that opened the pull
+request**, so it has to be your own login — not your team's, not the person
+you are proposing on behalf of. The `submission-rules` check fails any pull
+request that breaks these rules, and a failing check blocks the merge.
+
+## Filling in the proposal file
 
 | Field | Required | What to write |
 |---|---|---|
-| `name` | yes | `exp_` + lowercase words, e.g. `exp_finance_reports`. Same as the directory. At most 40 characters, not an existing task. |
-| `title` | yes | One line for the leaderboard. |
-| `proposer.github` | yes | Your GitHub handle. |
+| `name` | yes | `exp_` + lowercase words, e.g. `exp_finance_reports`. Same as the file name, without `.yaml`. At most 40 characters, not an existing task, not already proposed by someone else. |
+| `title` | yes | One line: what the expert gets good at. Use it as your PR title. |
+| `proposer.github` | yes | Your GitHub login — the same as your folder name and the account opening the PR. |
 | `proposer.contact` | no | Discord handle, email, or hotkey, if you want to be reachable. |
 | `summary` | yes | Two or three sentences: what the expert would be able to do. |
 | `motivation` | yes | Why this is worth a training window. Who would use it? What does the base model do badly now? This is what voters read — make the case. |
@@ -176,12 +191,23 @@ text at all, but it cannot be compared with other tasks, so a proposal with a
 real benchmark will usually get more support.
 
 A custom lm-eval task (not in the harness) is allowed. Say so in the PR and
-include its YAML in your proposal's `README.md`; the check will mark it
-unverified and a maintainer will review it.
+paste its YAML into the PR description (a submission cannot contain extra
+files); the check will mark it unverified and a maintainer will review it.
 
 ## The checks, and how to fix a failure
 
-Two checks run on every pull request.
+Three checks run on every pull request. All three must pass before it can be
+merged.
+
+**`submission-rules`** — the pull request changes only one `.yaml` file, in
+your own folder ([the rules](#what-a-pull-request-may-contain)):
+
+| Message | Fix |
+|---|---|
+| `` `X` is outside proposals/<your-login>/ `` | Remove every change except your proposal file from the PR. |
+| `` `X` is in `someone`'s folder `` | Move your file to `proposals/<your-login>/`, and undo changes to other people's files. |
+| `` `X` is not a `.yaml` file `` | Remove it. Only the proposal itself is submitted; put explanations in the PR description. |
+| `adds or edits N proposals` | Keep one proposal in this PR and open a separate PR for each of the others. |
 
 **`proposal-file`** — the YAML is valid and complete. Errors name the field:
 
@@ -189,11 +215,13 @@ Two checks run on every pull request.
 |---|---|
 | `name must look like exp_<words>` | Lowercase, `exp_` prefix, single underscores. |
 | `already a task on the subnet` | Pick a different name. |
-| `directory name must equal the proposal's name` | Rename the directory or the `name`. |
+| `the file must be named after the proposal's name` | Rename the file to `<name>.yaml`, or change `name`. |
+| `the folder must be the proposer's GitHub login` | Set `proposer.github` to your login, and keep the file in `proposals/<your-login>/`. |
+| `proposed by more than one person` | Someone already proposed a task with this name; pick another name (or support theirs with a 👍). |
+| `only <github-login>/<task-name>.yaml files belong here` | The file is in the wrong place or is not `.yaml`. |
 | `weights must sum to 1.0` | Adjust the `weight`s. |
 | `Extra inputs are not permitted` | A misspelt field name; compare with the template. |
 | `graded on data it trained on` | A benchmark uses a training dataset and split. Use its `test` split, or a different dataset. |
-| `only proposal.yaml (and an optional README.md) belong here` | Remove other files from the directory. |
 
 **`data-can-run`** — the data actually loads. The full report is on the PR's
 *Checks* tab under the job summary; the same report prints locally with
@@ -215,22 +243,18 @@ Two checks run on every pull request.
 ## Voting and discussion
 
 - **To vote**, add a 👍 reaction **to the pull request's description** (the
-  first box on the PR page). Reactions on comments do not count.
-- One vote per GitHub account. Votes on your own PR, from bots, and from
-  accounts younger than 30 days do not count.
-- 👎 is shown on the leaderboard so disagreement is visible, but the ranking
-  is by 👍.
-- Only PRs whose `data-can-run` check is green on their latest commit are
-  ranked; the rest are listed below the ranking with the reason.
-- Ties go to the proposal opened first.
+  first box on the PR page). GitHub allows one 👍 per account per pull request.
+- **To see what is winning**, open the
+  [open proposals sorted by 👍](https://github.com/Connito-AI/expert-hunter/pulls?q=is%3Apr+is%3Aopen+sort%3Areactions-%2B1-desc).
 - **Comment** on any proposal to ask questions, point out problems, or suggest
   better data or benchmarks. Good discussion is what turns a popular idea into
   a task that works. Keep it about the proposal.
 
-The ranking sets the **order** in which the owner reviews proposals. The owner
-can still decline a proposal — for example if the data's licence is unclear, it
-duplicates a task that ran, or the benchmark cannot show a result — and will
-say why in the PR.
+Votes set the **order** in which the owner reviews proposals. The owner reads
+the vote count with judgment — a sudden burst of 👍 from brand-new accounts is
+not the same as support from people who mine or validate — and can decline a
+proposal, for example if the data's licence is unclear, it duplicates a task
+that ran, or the benchmark cannot show a result. The reason is given in the PR.
 
 ## What happens if your proposal wins
 
@@ -257,7 +281,11 @@ the subnet's state and are the same across tasks so results are comparable.
 Suggest them in your PR's description if you have evidence; the owner may use
 it.
 
-**How long until my proposal runs?** It depends on its rank and on the task
+**Can I propose on behalf of someone else, or as a team?** Open the pull
+request from your own account, into your own folder, and credit them in the
+description. The folder always belongs to the account that opened the PR.
+
+**How long until my proposal runs?** It depends on its votes and on the task
 currently running. Each task runs for at least one training window.
 
 **Is my proposal public?** Yes — everything in a PR is public. Do not include

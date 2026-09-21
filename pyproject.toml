@@ -24,7 +24,7 @@ test = [
 [project.scripts]
 expert-hunter-check = "expert_hunter.check:run"
 expert-hunter-export = "expert_hunter.export:main"
-expert-hunter-leaderboard = "expert_hunter.leaderboard:main"
+expert-hunter-submission = "expert_hunter.submission:main"
 
 [tool.setuptools.packages.find]
 include = ["expert_hunter*"]

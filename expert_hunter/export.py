@@ -58,7 +58,7 @@ def task_config(proposal: Proposal, group_id: int) -> dict:
 def render(proposal: Proposal, group_id: int) -> str:
     header = (
         f"# {proposal.name}: {proposal.title}\n"
-        f"# Exported from expert-hunter proposals/{proposal.name}/proposal.yaml,\n"
+        f"# Exported from expert-hunter proposals/{proposal.proposer.github}/{proposal.name}.yaml,\n"
         f"# proposed by @{proposal.proposer.github}.\n"
         "#\n"
         "# STILL NEEDED before this can be scheduled: expert_assignment.json from\n"
@@ -84,15 +84,15 @@ def render(proposal: Proposal, group_id: int) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("name", help="proposal name (under proposals/ or examples/)")
+    parser.add_argument("name", help="task name (under proposals/ or examples/) or a .yaml path")
     parser.add_argument("--group-id", type=int, required=True,
                         help="a group id no existing task uses (see cycle-api configs/tasks/)")
     args = parser.parse_args(argv)
 
-    for root in (P.PROPOSALS_DIR, P.EXAMPLES_DIR):
-        if (root / args.name).is_dir():
-            sys.stdout.write(render(P.load(root / args.name), args.group_id))
-            return 0
+    path = P.find(args.name)
+    if path is not None:
+        sys.stdout.write(render(P.load(path), args.group_id))
+        return 0
     print(f"no proposal {args.name!r}", file=sys.stderr)
     return 1
 

@@ -8,8 +8,8 @@
 # whole file into memory on every miner. OpenMathInstruct-2 is the same kind of
 # data, sharded into parquet, which streams a row group at a time.
 #
-# It lives under examples/, so it never appears on the leaderboard; CI checks it
-# like a real proposal.
+# It lives under examples/, not proposals/, so it is never up for a vote; CI
+# checks it like a real proposal.
 name: exp_metamath_reasoning
 title: Math word-problem reasoning (OpenMathInstruct-2 + c4)
 
