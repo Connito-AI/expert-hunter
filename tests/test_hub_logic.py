@@ -7,7 +7,7 @@ from expert_hunter import proposals as P
 
 @pytest.fixture
 def proposal():
-    return P.load(P.EXAMPLES_DIR / "exp_biomed_pubmed")
+    return P.load(P.EXAMPLES_DIR / "connito-ai" / "exp_biomed_pubmed.yaml")
 
 
 def fake(monkeypatch, rows_by_path, info_by_path=None):
@@ -65,7 +65,7 @@ def test_non_text_column_fails(monkeypatch, proposal):
 
 def test_template_source_is_rendered(monkeypatch):
     """A question/answer corpus passes when its template renders usable text."""
-    proposal = P.load(P.EXAMPLES_DIR / "exp_metamath_reasoning")
+    proposal = P.load(P.EXAMPLES_DIR / "connito-ai" / "exp_metamath_reasoning.yaml")
     rows = {"nvidia/OpenMathInstruct-2": [{"problem": f"problem {i}", "generated_solution": LONG}
                                           for i in range(50)],
             "allenai/c4": good_rows("text"),
@@ -77,7 +77,7 @@ def test_template_source_is_rendered(monkeypatch):
 
 
 def test_template_column_missing_fails(monkeypatch):
-    proposal = P.load(P.EXAMPLES_DIR / "exp_metamath_reasoning")
+    proposal = P.load(P.EXAMPLES_DIR / "connito-ai" / "exp_metamath_reasoning.yaml")
     rows = {"nvidia/OpenMathInstruct-2": [{"problem": LONG}] * 10,
             "allenai/c4": good_rows("text"),
             "openai/gsm8k": [{"question": "q"}]}

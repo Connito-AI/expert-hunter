@@ -1,6 +1,6 @@
 """What a task proposal is.
 
-A proposal is one `proposals/<name>/proposal.yaml`. It says what the subnet
+A proposal is one `proposals/<github-login>/<name>.yaml`. It says what the subnet
 should train a new expert on (`data`) and how we will know the expert is any
 good (`benchmarks`). Everything else a running task needs — the group id, the
 expert assignment, batch geometry — is the owner's job once the proposal wins,

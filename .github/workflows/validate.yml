@@ -1,16 +1,21 @@
 name: Validate proposal
 
-# Two jobs, and the second one's name matters: the leaderboard only ranks PRs
-# whose `data-can-run` check passed on their latest commit.
+# Three jobs. Make all three required checks on main:
 #
-# `data-can-run` runs the checker from the BASE branch against the proposal
-# files from the PR. A proposal PR must not be able to change the code that
-# judges it — and the leaderboard also refuses any PR touching files outside
-# proposals/, so a PR that edits the checker is never ranked either.
+#   submission-rules  a contributor's PR may only add or edit ONE file,
+#                     proposals/<their-login>/<task-name>.yaml — nothing else.
+#   proposal-file     the YAML is valid and complete (and the test suite passes).
+#   data-can-run      the proposal's datasets load from the Hub the way a
+#                     miner's dataloader loads them.
+#
+# submission-rules and data-can-run run the checker from the BASE branch
+# against the files from the PR, so a PR cannot change the code that judges
+# it. (proposal-file runs the PR's own code, which is safe only because
+# submission-rules fails any contributor PR that touches that code.)
 #
 # Plain `pull_request` (not `pull_request_target`): the token is read-only and
-# no secrets are exposed to code from forks. The report goes to the job summary,
-# which shows on the PR's checks tab without any write permission.
+# no secrets reach code from forks. Reports go to the job summary, which shows
+# on the PR's checks tab without any write permission.
 
 on:
   pull_request:
@@ -25,8 +30,58 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  # Logins treated as maintainers whatever GitHub's author_association says:
+  # an App opening PRs shows as NONE, and an org member with private
+  # membership can show as CONTRIBUTOR. Add yours here if that is you.
+  TRUSTED_AUTHORS: "connito-client-dev[bot]"
+
 jobs:
-  offline:
+  submission-rules:
+    name: submission-rules
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checker (from the base branch)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          path: tool
+      - name: Pull request files
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: pr
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ./tool
+      - name: Only proposals/<author>/<task>.yaml may change
+        if: github.event_name == 'pull_request'
+        env:
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          ASSOCIATION: ${{ github.event.pull_request.author_association }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          # From RUNNER_TEMP, so `python -m` imports the installed base-branch
+          # checker rather than an expert_hunter/ the PR might carry.
+          cd "$RUNNER_TEMP"
+          # Only for the one PR that introduces this check: its base has no
+          # checker yet. The base branch is maintainer-controlled, so this
+          # cannot be triggered by a contributor.
+          if ! python -c "import expert_hunter.submission" 2>/dev/null; then
+            echo "The base branch predates the submission check; nothing to run." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          python -m expert_hunter.submission --author "$AUTHOR" --association "$ASSOCIATION" \
+            --base "$BASE" --repo "$GITHUB_WORKSPACE/pr" --trusted "$TRUSTED_AUTHORS" \
+            --report "$GITHUB_STEP_SUMMARY"
+      - name: Not a pull request
+        if: github.event_name != 'pull_request'
+        run: echo "Push to main; submission rules apply to pull requests only." >> "$GITHUB_STEP_SUMMARY"
+
+  proposal-file:
     name: proposal-file
     runs-on: ubuntu-latest
     steps:
@@ -67,23 +122,23 @@ jobs:
         run: |
           cd pr
           if [ -n "$BASE" ]; then
-            dirs=$(git diff --name-only --diff-filter=AM "$BASE"...HEAD \
-                   | grep -E '^proposals/[^_/][^/]*/' | cut -d/ -f1-2 | sort -u | tr '\n' ' ')
+            files=$(git diff --name-only --diff-filter=AMR "$BASE"...HEAD \
+                    | grep -E '^proposals/[^/]+/[^/]+\.yaml$' | tr '\n' ' ' || true)
           else
             # On main (or a manual run): re-check every worked example, so a
             # dataset that disappears or goes gated is noticed here rather than
             # in someone's first pull request.
-            dirs=$(ls -d examples/*/ | sed 's:/$::' | tr '\n' ' ')
+            files=$(ls examples/*/*.yaml | tr '\n' ' ')
           fi
-          echo "dirs=$dirs" >> "$GITHUB_OUTPUT"
-          echo "Proposals to check: ${dirs:-none}"
+          echo "files=$files" >> "$GITHUB_OUTPUT"
+          echo "Proposals to check: ${files:-none}"
       - name: Load the data the way a miner would
-        if: steps.changed.outputs.dirs != ''
+        if: steps.changed.outputs.files != ''
         env:
           HF_HUB_DISABLE_PROGRESS_BARS: "1"
         run: |
           args=""
-          for d in ${{ steps.changed.outputs.dirs }}; do args="$args $PWD/pr/$d"; done
+          for f in ${{ steps.changed.outputs.files }}; do args="$args $PWD/pr/$f"; done
           # Run from RUNNER_TEMP, not from pr/: `python -m` puts the working
           # directory first on sys.path, so running inside pr/ would import the
           # PR's own expert_hunter/ instead of the installed base-branch checker.
@@ -93,5 +148,5 @@ jobs:
           cat "$RUNNER_TEMP/report.md" >> "$GITHUB_STEP_SUMMARY"
           exit ${status:-0}
       - name: Nothing to check
-        if: steps.changed.outputs.dirs == ''
+        if: steps.changed.outputs.files == ''
         run: echo "This PR adds no proposal; nothing to load." >> "$GITHUB_STEP_SUMMARY"

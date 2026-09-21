@@ -1,15 +1,20 @@
-# Copy this directory to proposals/<your name>/ and fill it in.
+# Copy this file to proposals/<your-github-login>/<name>.yaml and fill it in:
+#
+#   mkdir -p proposals/octocat
+#   cp template/exp_your_task_name.yaml proposals/octocat/exp_finance_reports.yaml
+#
+# Your pull request may contain that one file and nothing else.
 # doc/GUIDE.md explains every field. Delete these comments if you like.
 
 # The task's name on the subnet. exp_ followed by lowercase words joined with
-# single underscores; it must match the directory name.
+# single underscores; it must match the file name (without .yaml).
 name: exp_your_task_name
 
-# One line, shown on the leaderboard.
+# One line: what the expert gets good at. It is also your pull request title.
 title: What the expert gets good at
 
 proposer:
-  github: your-github-handle     # the account opening the PR
+  github: your-github-handle     # your GitHub login: the same as your folder name
   contact: null                   # optional: Discord handle, email, or hotkey
 
 # Two or three sentences: what the new expert would be able to do.

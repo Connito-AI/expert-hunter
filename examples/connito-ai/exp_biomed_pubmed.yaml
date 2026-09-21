@@ -1,5 +1,6 @@
-# A worked example, not a live proposal: it lives under examples/, so it never
-# appears on the leaderboard. CI checks it like a real one, so it stays valid.
+# A worked example, not a live proposal: it lives under examples/, not
+# proposals/, so it is never up for a vote. CI checks it like a real one, so it
+# stays valid.
 #
 # Modelled on the experiment repo's p4-biomed-cpt row (PubMed abstracts plus
 # a c4 replay stream) and its medical benchmarks.

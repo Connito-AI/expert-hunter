@@ -6,8 +6,9 @@
 
 ### Checklist
 
-- [ ] I added exactly one directory, `proposals/<name>/`, containing `proposal.yaml` (and optionally a `README.md`) — nothing else in the repo changed.
-- [ ] `name` in the file matches the directory name.
+- [ ] This PR adds exactly **one** file, `proposals/<my-github-login>/<task-name>.yaml`, and changes nothing else.
+- [ ] The folder is my own GitHub login (the account opening this PR), and `proposer.github` says the same.
+- [ ] `name` in the file matches the file name.
 - [ ] Every training dataset is public and **not gated** on HuggingFace.
 - [ ] I ran the checks locally and they passed:
       `python -m expert_hunter.check <name> --network`
@@ -16,7 +17,7 @@
 
 ### Anything reviewers should know
 
-<!-- e.g. a custom lm-eval task, a dataset you re-exported, known weaknesses -->
+<!-- e.g. a custom lm-eval task (paste its YAML here), how a dataset was built, known weaknesses -->
 
 ---
 **Voting:** give this PR a 👍 (on this description, not on a comment) if you want the subnet to train it. Use the comments to discuss or suggest changes.
