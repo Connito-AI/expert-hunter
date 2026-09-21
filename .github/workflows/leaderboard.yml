@@ -4,6 +4,11 @@ name: Leaderboard
 # vote, and only PRs whose `data-can-run` check passed are ranked. Runs on a
 # schedule rather than on every reaction, because GitHub fires no event for a
 # reaction.
+#
+# The file lives on its own `leaderboard` branch, not on main. main is
+# protected by a ruleset (pull request + approvals, no direct pushes), which a
+# bot commit every six hours could never satisfy — and should not be exempted
+# from. A branch that holds nothing but this one generated file needs no review.
 
 on:
   schedule:
@@ -15,7 +20,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write        # commit LEADERBOARD.md
+  contents: write        # push the `leaderboard` branch
   pull-requests: read
   issues: read
   checks: read
@@ -32,15 +37,28 @@ jobs:
       - name: Rank open proposals
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python -m expert_hunter.leaderboard LEADERBOARD.md
-      - name: Commit if it changed
+        run: python -m expert_hunter.leaderboard "$RUNNER_TEMP/LEADERBOARD.md"
+      - name: Publish to the leaderboard branch
         run: |
-          # The timestamp line always changes; commit only when the ranking did.
-          if git diff --quiet -I '^_Updated ' -- LEADERBOARD.md; then
-            echo "ranking unchanged"; exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          board="$RUNNER_TEMP/board"
+          if git fetch --depth=1 origin leaderboard; then
+            git worktree add "$board" FETCH_HEAD
+            cd "$board"
+            git checkout -B leaderboard
+          else
+            # First run: an orphan branch holding only the leaderboard.
+            git worktree add --detach "$board"
+            cd "$board"
+            git checkout --orphan leaderboard
+            git rm -rfq .
+          fi
+          cp "$RUNNER_TEMP/LEADERBOARD.md" LEADERBOARD.md
           git add LEADERBOARD.md
-          git commit -m "leaderboard: update ranking"
-          git push
+          # The timestamp line always changes; publish only when the ranking did.
+          if git rev-parse -q --verify HEAD >/dev/null && git diff --cached --quiet -I '^_Updated ' ; then
+            echo "ranking unchanged"; exit 0
+          fi
+          git commit -qm "leaderboard: update ranking"
+          git push origin leaderboard

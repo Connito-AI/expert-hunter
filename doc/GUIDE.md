@@ -66,7 +66,7 @@ that repeats one of these needs a good reason.
    (a `README.md` next to the YAML is welcome for longer explanations). Fill in
    the PR template's checklist.
 6. **Watch the checks** on your PR. When `data-can-run` is green, your
-   proposal appears on the [leaderboard](../LEADERBOARD.md) within six hours.
+   proposal appears on the [leaderboard](https://github.com/Connito-AI/expert-hunter/blob/leaderboard/LEADERBOARD.md) within six hours.
 7. **Answer comments.** People will ask questions and suggest changes. Push
    fixes to the same branch; votes stay with the PR.
 

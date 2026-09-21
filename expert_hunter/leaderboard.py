@@ -1,6 +1,6 @@
 """Rank open proposal PRs by upvotes: `python -m expert_hunter.leaderboard`.
 
-Writes LEADERBOARD.md. Needs `GITHUB_TOKEN` (read access is enough) and
+Writes LEADERBOARD.md (CI publishes it to the `leaderboard` branch). Needs `GITHUB_TOKEN` (read access is enough) and
 `GITHUB_REPOSITORY` (`owner/repo`); both are set inside GitHub Actions.
 
 The rules, which doc/GUIDE.md repeats for proposers:
@@ -107,7 +107,7 @@ def render(candidates: list[Candidate], repo: str, now: datetime) -> str:
         "Do not edit by hand — a workflow regenerates this file._",
         "",
         "Vote with a 👍 on the pull request itself. Discuss in its comments. "
-        "See [doc/GUIDE.md](doc/GUIDE.md) for the rules.",
+        f"See [the guide](https://github.com/{repo}/blob/main/doc/GUIDE.md) for the rules.",
         "",
     ]
     if ranked:

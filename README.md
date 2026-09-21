@@ -11,7 +11,7 @@ the order.
 |---|---|
 | **Want to propose a task?** | Read **[doc/GUIDE.md](doc/GUIDE.md)**, copy [`proposals/_template/`](proposals/_template/proposal.yaml), open a pull request. |
 | **Want to vote?** | Give a 👍 to the pull request you want trained. Comment to discuss it. |
-| **What is winning?** | **[LEADERBOARD.md](LEADERBOARD.md)**, updated every six hours. |
+| **What is winning?** | **[The leaderboard](https://github.com/Connito-AI/expert-hunter/blob/leaderboard/LEADERBOARD.md)**, updated every six hours. |
 | **Complete examples** | [`exp_biomed_pubmed`](examples/exp_biomed_pubmed/proposal.yaml) (plain text corpus), [`exp_metamath_reasoning`](examples/exp_metamath_reasoning/proposal.yaml) (question/answer corpus rendered by a template) |
 
 ## How it works
@@ -69,7 +69,7 @@ expert_hunter/
   schema.py                 what a proposal may contain
   check.py                  python -m expert_hunter.check [NAME] [--network]
   hub.py                    the "can the data run" check
-  leaderboard.py            ranks open PRs by 👍 → LEADERBOARD.md
+  leaderboard.py            ranks open PRs by 👍 → LEADERBOARD.md on the `leaderboard` branch
   export.py                 proposal → cycle-api configs/tasks/<name>/config.yaml
 tests/                      pytest; `--network` adds the real Hub check
 doc/GUIDE.md                the guide for proposers
