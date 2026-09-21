@@ -70,7 +70,10 @@ jobs:
             dirs=$(git diff --name-only --diff-filter=AM "$BASE"...HEAD \
                    | grep -E '^proposals/[^_/][^/]*/' | cut -d/ -f1-2 | sort -u | tr '\n' ' ')
           else
-            dirs="examples/exp_biomed_pubmed"   # on main: keep the example honest
+            # On main (or a manual run): re-check every worked example, so a
+            # dataset that disappears or goes gated is noticed here rather than
+            # in someone's first pull request.
+            dirs=$(ls -d examples/*/ | sed 's:/$::' | tr '\n' ' ')
           fi
           echo "dirs=$dirs" >> "$GITHUB_OUTPUT"
           echo "Proposals to check: ${dirs:-none}"
