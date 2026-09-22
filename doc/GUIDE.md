@@ -4,6 +4,10 @@ Have an idea for what the Connito subnet should train next? Proposing it takes
 one YAML file and one pull request. You don't need to run a miner, and you
 don't need to write a research paper.
 
+This is a **pre-alpha of our training-as-a-service platform**. Every proposal,
+and every insight from how its experiment goes, helps us build a better
+platform for the customers who will later train their own experts on it.
+
 **The short version:** idea → copy the template → fill in a few fields → open a PR.
 
 - [What you are proposing](#what-you-are-proposing)
