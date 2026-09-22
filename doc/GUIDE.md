@@ -6,12 +6,13 @@ a dataset on HuggingFace, and a benchmark that shows whether training worked.
 
 - [What you are proposing](#what-you-are-proposing)
 - [Step by step](#step-by-step)
+- [Writing the story](#writing-the-story)
 - [Filling in the proposal file](#filling-in-the-proposal-file)
 - [Choosing the data](#choosing-the-data)
 - [Choosing the benchmark](#choosing-the-benchmark)
 - [The checks, and how to fix a failure](#the-checks-and-how-to-fix-a-failure)
 - [Voting and discussion](#voting-and-discussion)
-- [What happens if your proposal wins](#what-happens-if-your-proposal-wins)
+- [What happens if your proposal is picked](#what-happens-if-your-proposal-is-picked)
 - [FAQ](#faq)
 
 ## What you are proposing
@@ -23,10 +24,12 @@ so they become specialists — a math expert, a legal expert, a medical expert.
 Miners do the training; validators score it on held-out data from the same
 sources.
 
-Your proposal answers two questions:
+Your proposal answers three questions:
 
 1. **What should the experts learn from?** One or more HuggingFace datasets.
 2. **How will we know they learned it?** One or more benchmarks.
+3. **Why does the subnet need it?** A short story in the pull request
+   description ([how to write it](#writing-the-story)).
 
 Everything else (which experts, batch sizes, how long it runs) is decided by the
 subnet owner when the task is scheduled.
@@ -65,9 +68,11 @@ that repeats one of these needs a good reason.
    The second command downloads a sample of every dataset you named — the
    same way a miner's dataloader will — and prints what it found. Fix anything
    marked ✗ before you open the pull request.
-5. **Open one pull request containing only that one file.** Fill in the PR
-   template's checklist. Anything longer you want to say — a custom benchmark,
-   how you built a dataset — goes in the PR description, not in extra files.
+5. **Open one pull request containing only that one file.** The PR
+   description opens with a template: **write the story** of why this expert
+   is needed ([how](#writing-the-story)), then fill in the checklist. Anything
+   longer you want to say — a custom benchmark, how you built a dataset — goes
+   in the PR description too, not in extra files.
 6. **Watch the checks** on your PR. All three must be green before it can be
    merged ([what each one means](#the-checks-and-how-to-fix-a-failure)).
 7. **Answer comments.** People will ask questions and suggest changes. Push
@@ -87,6 +92,30 @@ request**, so it has to be your own login — not your team's, not the person
 you are proposing on behalf of. The `submission-rules` check fails any pull
 request that breaks these rules, and a failing check blocks the merge.
 
+## Writing the story
+
+The YAML file says *what* to train. The story, at the top of your pull request
+description, says *why*. It is the first thing voters and the owner read, and
+a proposal without one is hard to support, however good its data is.
+
+Write it for someone who knows the subnet but not your field. A few paragraphs
+is enough. Cover:
+
+- **Who needs this.** A person, a team, a product, a community — someone
+  concrete who would use the expert.
+- **Where the model falls short today.** One real example is worth more than
+  a general claim: a question the base model gets wrong, a document it cannot
+  follow, a task people do by hand instead. Paste the prompt and the bad
+  answer if you have them.
+- **What changes once the expert exists.** What they could do that they
+  cannot now, and how the benchmark you chose would show it.
+- **Why now.** Why this should go before the other open proposals, and before
+  something the subnet has already trained.
+
+The `motivation` field in the YAML is the one-paragraph version of the story;
+it stays in the repository as the record once the PR is merged. The story in
+the PR is where you make the full case.
+
 ## Filling in the proposal file
 
 | Field | Required | What to write |
@@ -96,7 +125,7 @@ request that breaks these rules, and a failing check blocks the merge.
 | `proposer.github` | yes | Your GitHub login — the same as your folder name and the account opening the PR. |
 | `proposer.contact` | no | Discord handle, email, or hotkey, if you want to be reachable. |
 | `summary` | yes | Two or three sentences: what the expert would be able to do. |
-| `motivation` | yes | Why this is worth a training window. Who would use it? What does the base model do badly now? This is what voters read — make the case. |
+| `motivation` | yes | Why this is worth a training window, in one paragraph: who would use it, what the base model does badly now. The short version of [the story](#writing-the-story) in your PR. |
 | `data.dataset_sources` | yes | 1 to 4 datasets; see [Choosing the data](#choosing-the-data). |
 | `data.sequence_length` | no | 1024 (default), 2048 or 4096 tokens per training sample. Use more only if the domain needs long context. |
 | `benchmarks` | yes | 1 to 5 benchmarks; see [Choosing the benchmark](#choosing-the-benchmark). |
@@ -244,19 +273,20 @@ your own folder ([the rules](#what-a-pull-request-may-contain)):
 
 - **To vote**, add a 👍 reaction **to the pull request's description** (the
   first box on the PR page). GitHub allows one 👍 per account per pull request.
-- **To see what is winning**, open the
-  [open proposals sorted by 👍](https://github.com/Connito-AI/expert-hunter/pulls?q=is%3Apr+is%3Aopen+sort%3Areactions-%2B1-desc).
 - **Comment** on any proposal to ask questions, point out problems, or suggest
   better data or benchmarks. Good discussion is what turns a popular idea into
   a task that works. Keep it about the proposal.
 
-Votes set the **order** in which the owner reviews proposals. The owner reads
-the vote count with judgment — a sudden burst of 👍 from brand-new accounts is
-not the same as support from people who mine or validate — and can decline a
-proposal, for example if the data's licence is unclear, it duplicates a task
-that ran, or the benchmark cannot show a result. The reason is given in the PR.
+The owner decides which task runs next, and **takes the number of 👍 as a
+reference** when choosing — it shows what the community wants, but it does not
+decide on its own. The owner also weighs the story, the quality of the data and
+benchmark, and what the subnet has trained already, and reads the votes with
+judgment: a sudden burst of 👍 from brand-new accounts is not the same as
+support from people who mine or validate. A proposal can be declined, for
+example if the data's licence is unclear, it duplicates a task that ran, or the
+benchmark cannot show a result. The reason is given in the PR.
 
-## What happens if your proposal wins
+## What happens if your proposal is picked
 
 1. The owner reviews it, may ask for changes in the PR, and merges it.
 2. It is exported into a cycle-api task:
@@ -285,8 +315,13 @@ it.
 request from your own account, into your own folder, and credit them in the
 description. The folder always belongs to the account that opened the PR.
 
-**How long until my proposal runs?** It depends on its votes and on the task
+**How long until my proposal runs?** There is no fixed queue. It depends on
+when the owner picks it — votes are one input to that — and on the task
 currently running. Each task runs for at least one training window.
+
+**Does the proposal with the most 👍 always run next?** No. The owner uses the
+👍 count as a reference, together with the story, the data, the benchmark and
+what the subnet needs at the time.
 
 **Is my proposal public?** Yes — everything in a PR is public. Do not include
 private data links or credentials.

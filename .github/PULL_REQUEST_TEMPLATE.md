@@ -4,12 +4,21 @@
 
 **In one sentence:** what the new expert would be good at.
 
+### The story
+
+<!-- Why does the subnet need this expert? See "Writing the story" in doc/GUIDE.md.
+     - Who needs it: a person, team, product or community who would use it.
+     - Where the model falls short today: one real example (the prompt and the bad answer, if you have them).
+     - What changes once the expert exists, and how your benchmark would show it.
+     - Why now: why this before the other open proposals. -->
+
 ### Checklist
 
 - [ ] This PR adds exactly **one** file, `proposals/<my-github-login>/<task-name>.yaml`, and changes nothing else.
 - [ ] The folder is my own GitHub login (the account opening this PR), and `proposer.github` says the same.
 - [ ] `name` in the file matches the file name.
 - [ ] Every training dataset is public and **not gated** on HuggingFace.
+- [ ] I wrote the story above.
 - [ ] I ran the checks locally and they passed:
       `python -m expert_hunter.check <name> --network`
 - [ ] The benchmark's scored split is not part of the training data (explained under `contamination`).
@@ -20,4 +29,4 @@
 <!-- e.g. a custom lm-eval task (paste its YAML here), how a dataset was built, known weaknesses -->
 
 ---
-**Voting:** give this PR a 👍 (on this description, not on a comment) if you want the subnet to train it. Use the comments to discuss or suggest changes.
+**Voting:** give this PR a 👍 (on this description, not on a comment) if you want the subnet to train it. The owner takes the 👍 count into account when choosing the next task. Use the comments to discuss or suggest changes.

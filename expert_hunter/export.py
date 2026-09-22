@@ -1,4 +1,4 @@
-"""Turn a winning proposal into a cycle-api task config.
+"""Turn an accepted proposal into a cycle-api task config.
 
 `python -m expert_hunter.export exp_name --group-id 7 > config.yaml`
 
