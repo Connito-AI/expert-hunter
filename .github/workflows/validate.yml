@@ -8,6 +8,12 @@ name: Validate proposal
 #   data-can-run      the proposal's datasets load from the Hub the way a
 #                     miner's dataloader loads them.
 #
+# A fourth, subnet-contract, loads every proposal's exported config through the
+# subnet's own config classes (Connito-AI/Connito, master). It is NOT meant to
+# be required: when it fails, the subnet changed and export needs updating —
+# nothing a proposer can fix. It also runs weekly, so drift shows up even when
+# no one opens a PR.
+#
 # submission-rules and data-can-run run the checker from the BASE branch
 # against the files from the PR, so a PR cannot change the code that judges
 # it. (proposal-file runs the PR's own code, which is safe only because
@@ -21,6 +27,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    - cron: "17 6 * * 1"   # Mondays; only subnet-contract runs
   workflow_dispatch:
 
 concurrency:
@@ -39,6 +47,7 @@ env:
 jobs:
   submission-rules:
     name: submission-rules
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - name: Checker (from the base branch)
@@ -83,6 +92,7 @@ jobs:
 
   proposal-file:
     name: proposal-file
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -97,6 +107,7 @@ jobs:
 
   data-can-run:
     name: data-can-run
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -150,3 +161,26 @@ jobs:
       - name: Nothing to check
         if: steps.changed.outputs.files == ''
         run: echo "This PR adds no proposal; nothing to load." >> "$GITHUB_STEP_SUMMARY"
+
+  subnet-contract:
+    name: subnet-contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: The subnet's config classes (Connito-AI/Connito, default branch)
+        uses: actions/checkout@v4
+        with:
+          repository: Connito-AI/Connito
+          path: subnet
+          sparse-checkout: connito/shared/config.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[test]"
+      - name: Every exported proposal loads in the subnet
+        env:
+          CONNITO_SUBNET: ${{ github.workspace }}/subnet
+        run: |
+          echo "Subnet at $(git -C subnet rev-parse --short HEAD)"
+          pytest tests/test_subnet_contract.py -v -rs

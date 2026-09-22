@@ -1,32 +1,18 @@
-<!-- One proposal per pull request. Read doc/GUIDE.md first. -->
+<!-- One proposal per pull request. doc/GUIDE.md has the short walkthrough. -->
 
 ## Proposal: `exp_...`
 
-**In one sentence:** what the new expert would be good at.
+**In one sentence:** what is trained, on which dataset, to improve which benchmark.
 
-### The story
-
-<!-- Why does the subnet need this expert? See "Writing the story" in doc/GUIDE.md.
-     - Who needs it: a person, team, product or community who would use it.
-     - Where the model falls short today: one real example (the prompt and the bad answer, if you have them).
-     - What changes once the expert exists, and how your benchmark would show it.
-     - Why now: why this before the other open proposals. -->
+<!-- Optional: anything the YAML didn't have room for — more on your hypothesis,
+     a custom lm-eval task (paste its YAML), how a dataset was built, known weaknesses. -->
 
 ### Checklist
 
-- [ ] This PR adds exactly **one** file, `proposals/<my-github-login>/<task-name>.yaml`, and changes nothing else.
-- [ ] The folder is my own GitHub login (the account opening this PR), and `proposer.github` says the same.
-- [ ] `name` in the file matches the file name.
-- [ ] Every training dataset is public and **not gated** on HuggingFace.
-- [ ] I wrote the story above.
-- [ ] I ran the checks locally and they passed:
-      `python -m expert_hunter.check <name> --network`
-- [ ] The benchmark's scored split is not part of the training data (explained under `contamination`).
-- [ ] I have the right to propose these datasets for training (licences listed).
-
-### Anything reviewers should know
-
-<!-- e.g. a custom lm-eval task (paste its YAML here), how a dataset was built, known weaknesses -->
+- [ ] This PR adds exactly **one** file, `proposals/<my-github-login>/exp_<task_name>.yaml`, copied from `template/`, and changes nothing else.
+- [ ] `name` matches the file name, and `proposer.github` is my login (the folder name).
+- [ ] `hypothesis` says why this data should improve the benchmark; `evidence` lists any support (or `none known`).
+- [ ] The benchmark's test split is not part of the training data.
 
 ---
 **Voting:** give this PR a 👍 (on this description, not on a comment) if you want the subnet to train it. The owner takes the 👍 count into account when choosing the next task. Use the comments to discuss or suggest changes.

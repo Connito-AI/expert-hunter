@@ -10,8 +10,7 @@ VALID = {
     "name": "exp_finance_reports",
     "title": "Financial report reading",
     "proposer": {"github": "someone"},
-    "summary": "Train an expert on earnings reports and filings.",
-    "motivation": "Financial question answering is a common use and the base model is weak at it today.",
+    "description": "Train an expert on earnings reports and filings to improve FinQA.",
     "data": {
         "dataset_sources": [
             {"path": "org/filings", "split": "train", "weight": 0.5, "text_column": "text"},
@@ -22,8 +21,9 @@ VALID = {
         "name": "finqa", "harness": "lm_eval", "task": "finqa", "num_fewshot": 0,
         "metric": "exact_match", "higher_is_better": True,
         "dataset": {"path": "ChanceFocus/flare-finqa", "split": "test"},
-        "why": "Numerical reasoning over the text and tables of earnings reports.",
     }],
+    "hypothesis": "FinQA asks numerical questions about filings, and the corpus is those filings.",
+    "evidence": "none known",
     "contamination": "FinQA's test split is not part of the filings corpus.",
 }
 
@@ -50,7 +50,7 @@ def reason(data) -> str:
 
 def test_valid_proposal_loads():
     p = Proposal(**VALID)
-    assert p.data.sequence_length == 1024
+    assert p.data.sequence_length == 4096
     assert p.data.dataset_sources[0].split == "train"
 
 
@@ -132,4 +132,20 @@ def test_benchmark_cannot_score_on_training_data():
 
 
 def test_placeholder_text_rejected():
-    assert "motivation" in reason(with_(motivation="..."))
+    assert "description" in reason(with_(description="..."))
+    assert "evidence" in reason(with_(evidence="..."))
+    assert "evidence" in reason(with_(evidence="...\n"))  # what a `>` block yields
+
+
+def test_hypothesis_and_evidence_are_required():
+    assert "hypothesis" in reason(with_(hypothesis=...))
+    assert "hypothesis" in reason(with_(hypothesis="it will"))
+    assert "evidence" in reason(with_(evidence=...))
+
+
+def test_the_light_parts_are_optional():
+    Proposal(**VALID)  # no suggested_training, no benchmark `why`, no sequence_length
+    assert Proposal(**VALID).data.sequence_length == 4096
+    p = Proposal(**with_(suggested_training={"steps": 2000, "batch_size": 512}))
+    assert (p.suggested_training.steps, p.suggested_training.batch_size) == (2000, 512)
+    assert "steps" in reason(with_(suggested_training={"steps": 0}))
