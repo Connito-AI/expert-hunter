@@ -32,9 +32,8 @@ def task_config(proposal: Proposal, group_id: int) -> dict:
         if s.text_column:
             entry["text_column"] = s.text_column
         else:
-            # experiment's render.cpt.text_template. Flagged in the header,
-            # because a source rendered from several columns needs the loader
-            # to apply the template rather than read one column.
+            # The subnet's DatasetSourceCfg.text_template: the dataloader
+            # renders the row with it instead of reading one column.
             entry["text_template"] = s.text_template
         sources.append(entry)
 
@@ -55,6 +54,14 @@ def task_config(proposal: Proposal, group_id: int) -> dict:
     return {"group_id": group_id, "data": data}
 
 
+def _suggestion(proposal: Proposal) -> str:
+    s = proposal.suggested_training
+    if s is None or (s.steps is None and s.batch_size is None):
+        return ""
+    parts = [f"{s.steps} steps" if s.steps else "", f"batch size {s.batch_size}" if s.batch_size else ""]
+    return "# The proposer suggested: " + ", ".join(p for p in parts if p) + " (not applied).\n"
+
+
 def render(proposal: Proposal, group_id: int) -> str:
     header = (
         f"# {proposal.name}: {proposal.title}\n"
@@ -65,12 +72,6 @@ def render(proposal: Proposal, group_id: int) -> str:
         "# profiling the base model on these sources, and an entry in\n"
         "# configs/task_schedule.yaml. Check group_id is not already taken.\n"
         "#\n"
-        + ("# NOTE: a source below uses `text_template` (several columns rendered into\n"
-           "# one, as in experiment's render.cpt.text_template). Confirm the miner\n"
-           "# build renders templates before scheduling; otherwise re-export the\n"
-           "# corpus with a single text column.\n#\n"
-           if any(s.text_template for s in proposal.data.dataset_sources) else "")
-        +
         "# Benchmarks the proposal will be judged on:\n"
         + "".join(
             f"#   - {b.name}: {b.harness}"
@@ -78,6 +79,7 @@ def render(proposal: Proposal, group_id: int) -> str:
             + f", metric {b.metric} ({'higher' if b.higher_is_better else 'lower'} is better)\n"
             for b in proposal.benchmarks
         )
+        + _suggestion(proposal)
     )
     return header + yaml.safe_dump(task_config(proposal, group_id), sort_keys=False)
 

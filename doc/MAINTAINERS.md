@@ -9,6 +9,7 @@ the repository and turn accepted proposals into subnet tasks.
 pip install -e ".[network,test]"
 pytest                                   # offline: schema, layout, submission rules, export
 pytest --network                         # also stream every proposal's data from the Hub
+CONNITO_SUBNET=../Connito pytest tests/test_subnet_contract.py   # exports load in the subnet
 python -m expert_hunter.check TASK --network
 python -m expert_hunter.export TASK --group-id 7 > config.yaml
 ```
@@ -27,6 +28,12 @@ python -m expert_hunter.export TASK --group-id 7 > config.yaml
 - `submission-rules` and `data-can-run` run the checker from the base branch,
   never from the pull request, so a proposal cannot change the rules it is
   judged by.
+- `subnet-contract` is deliberately **not** a required check. It loads every
+  exported proposal through `ExpertCfg` from the subnet repo's default branch,
+  and checks that every key export writes is a field the subnet declares (the
+  subnet ignores unknown keys, so a rename would otherwise fail silently). When
+  it goes red, the subnet changed: update `expert_hunter/export.py` and the
+  schema. It also runs every Monday.
 
 ## Repository layout
 

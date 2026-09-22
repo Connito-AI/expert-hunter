@@ -17,16 +17,9 @@ proposer:
   github: connito-ai
   contact: null
 
-summary: >
-  Train on OpenMathInstruct-2's problems and worked solutions, mixed half and
-  half with general web text, so the new expert works through multi-step
-  arithmetic and algebra word problems instead of guessing an answer.
-
-motivation: >
-  Word-problem reasoning is the capability the subnet can most clearly
-  demonstrate, and GSM8K is the benchmark most people recognise. The experiment
-  repo's p2-math-sft row trains this domain on this base model, so a result
-  here can be read against our own math history rather than standing alone.
+description: >
+  Train an expert on OpenMathInstruct-2's problems and worked solutions, mixed
+  half and half with general web text, to improve GSM8K.
 
 data:
   dataset_sources:
@@ -46,7 +39,6 @@ data:
       weight: 0.5
       text_column: text
       license: odc-by
-  sequence_length: 1024
 
 benchmarks:
   - name: gsm8k
@@ -63,6 +55,17 @@ benchmarks:
       Grade-school word problems, scored on the final answer; the standard
       measure for exactly this kind of training, at the 8 shots DeepSeek
       published its own numbers with.
+
+hypothesis: >
+  The training text is grade-school and competition problems with worked,
+  step-by-step solutions, and GSM8K scores the final answer to grade-school
+  word problems, so the data rehearses the exact skill and answer format the
+  benchmark rewards.
+
+evidence: >
+  The OpenMathInstruct-2 paper (Toshniwal et al., 2024) reports large GSM8K
+  gains from fine-tuning Llama-3.1-8B on this dataset. How much a small group
+  of experts keeps at this model size is the open question.
 
 contamination: >
   OpenMathInstruct-2's problems come from the GSM8K and MATH TRAIN splits and

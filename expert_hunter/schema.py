@@ -2,9 +2,11 @@
 
 A proposal is one `proposals/<github-login>/<name>.yaml`. It says what the subnet
 should train a new expert on (`data`) and how we will know the expert is any
-good (`benchmarks`). Everything else a running task needs — the group id, the
-expert assignment, batch geometry — is the owner's job once the proposal wins,
-so it is deliberately not asked for here.
+good (`benchmarks`), and why the one should move the other (`hypothesis`,
+`evidence`). Everything else a running task needs — the group id, the expert
+assignment, batch geometry — is the owner's job once a proposal is accepted.
+A proposer may suggest a training length and batch size (`suggested_training`),
+but the owner decides.
 
 The `data` block mirrors `data:` in cycle-api's
 `configs/tasks/<name>/config.yaml` (`path`, `name`, `split`, `weight`,
@@ -138,7 +140,7 @@ class DatasetSource(_Strict):
 
 class Data(_Strict):
     dataset_sources: list[DatasetSource] = Field(min_length=1, max_length=4)
-    sequence_length: int = 1024
+    sequence_length: int = 4096
 
     @field_validator("sequence_length")
     @classmethod
@@ -193,7 +195,9 @@ class Benchmark(_Strict):
     metric: str
     higher_is_better: bool
     dataset: HubSplit
-    why: str = Field(min_length=20)
+    # Optional: what this benchmark measures, if it is not obvious. The case for
+    # the whole proposal is `Proposal.hypothesis`.
+    why: str | None = None
 
     @model_validator(mode="after")
     def _harness_fields(self) -> "Benchmark":
@@ -215,17 +219,36 @@ class Proposer(_Strict):
     contact: str | None = None
 
 
+class SuggestedTraining(_Strict):
+    """The proposer's guess. Optional, and only a starting point for the owner."""
+
+    steps: int | None = Field(default=None, gt=0)
+    batch_size: int | None = Field(default=None, gt=0)
+
+
 class Proposal(_Strict):
     name: str
     title: str = Field(min_length=5, max_length=80)
     proposer: Proposer
-    summary: str = Field(min_length=20)
-    # Why the subnet should spend a training window on this.
-    motivation: str = Field(min_length=50)
+    # A sentence or two: what is trained, on which data, to improve which benchmark.
+    description: str = Field(min_length=20)
     data: Data
     benchmarks: list[Benchmark] = Field(min_length=1, max_length=5)
+    # Why training on `data` should raise the score on `benchmarks`. A few sentences.
+    hypothesis: str = Field(min_length=30)
+    # Research, papers or results that support the hypothesis. "none known" is
+    # an acceptable answer; the field is required so the question gets asked.
+    evidence: str = Field(min_length=4)
+    suggested_training: SuggestedTraining | None = None
     # How you know the benchmark's scored items are not in the training data.
-    contamination: str = Field(min_length=20)
+    contamination: str = Field(min_length=10)
+
+    @field_validator("description", "hypothesis", "evidence", "contamination", mode="before")
+    @classmethod
+    def _strip(cls, value):
+        # A `>` block ends in a newline, which would let the template's `...`
+        # placeholder count as four characters.
+        return value.strip() if isinstance(value, str) else value
 
     @field_validator("name")
     @classmethod

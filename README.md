@@ -15,12 +15,13 @@ owner how much support it has.
  <task>.yaml         data like a miner                                  merges if accepted   the subnet
 ```
 
-1. **Propose.** Read **[doc/GUIDE.md](doc/GUIDE.md)**, copy
-   [`template/exp_your_task_name.yaml`](template/exp_your_task_name.yaml) to
-   `proposals/<your-github-login>/<task-name>.yaml`, and open a pull request
-   with that one file. The file says at least **what data to train on** and
-   **which benchmark shows the expert got better**; the pull request
-   description tells the **story** of why the subnet needs it. Complete
+1. **Propose.** Copy the repo's template,
+   [`template/exp_your_task_name.yaml`](template/exp_your_task_name.yaml), to
+   `proposals/<your-github-login>/exp_<task_name>.yaml`, fill in a few fields,
+   and open a pull request with that one file ([doc/GUIDE.md](doc/GUIDE.md)
+   walks through it). The file says **what data to train on**, **which
+   benchmark it should improve**, and in a few sentences **why** — plus any
+   research that backs it up. Complete
    examples: [`exp_biomed_pubmed`](examples/connito-ai/exp_biomed_pubmed.yaml)
    (plain text corpus) and
    [`exp_metamath_reasoning`](examples/connito-ai/exp_metamath_reasoning.yaml)
@@ -33,8 +34,8 @@ owner how much support it has.
    - `proposal-file` — the YAML is valid and complete.
    - `data-can-run` — streams real rows from every dataset the proposal names,
      the same way a miner's dataloader does, and fails if a dataset is missing,
-     gated, has the wrong split or column, or its text is too short or
-     repetitive to evaluate on.
+     has the wrong split or column, or its text is too short or repetitive to
+     evaluate on.
 
    Reports appear on the PR's *Checks* tab. A PR can only be merged when all
    three pass.
@@ -42,7 +43,7 @@ owner how much support it has.
    Comments are for discussion: better datasets, a fairer benchmark, a problem
    with the licence. Proposers update their PR in response; votes stay.
 4. **Pick.** The owner decides which task runs next. The number of 👍 is one
-   of the things they take into account, alongside the story, the quality of
+   of the things they take into account, alongside the hypothesis, the quality of
    the data and benchmark, and what the subnet has trained already — it is a
    reference, not a ranking that decides on its own. A proposal can be turned
    down (for example, if it is too close to a task that already ran), and the

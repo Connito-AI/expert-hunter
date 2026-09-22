@@ -7,8 +7,9 @@ the rows are usable text. Every failure here is one that has happened, or would
 happen, on the subnet in the middle of a training window:
 
 * a path or config that does not exist (404 at dataloader build),
-* a gated dataset (every miner and validator would have to accept its licence
-  by hand, or file reads 403),
+* a gated dataset is allowed but flagged: every miner and validator has to
+  accept its terms on HuggingFace before the task runs, and this check cannot
+  read its rows without a login,
 * a split that is not `train` but was not named (KeyError: 'train'),
 * a text column (or a text_template's columns) that is missing, not text,
   or mostly empty,
@@ -153,7 +154,8 @@ def viewer_splits(path: str, timeout: float = 30.0) -> list[tuple[str, str]] | N
 
 
 def _check_hub_entry(report: Report, subject: str, path: str, revision: str | None,
-                     gated_is_error: bool, timeout: float) -> bool:
+                     is_training_source: bool, timeout: float) -> bool:
+    """False when the rows cannot or need not be streamed; errors are in `report`."""
     try:
         info = hub_info(path, revision, timeout)
     except urllib.error.HTTPError as exc:
@@ -170,12 +172,15 @@ def _check_hub_entry(report: Report, subject: str, path: str, revision: str | No
     if info.get("disabled"):
         report.add("error", subject, f"{path} is disabled on the Hub")
         return False
-    _check_file_layout(report, subject, path, info, gated_is_error)
+    _check_file_layout(report, subject, path, info, is_training_source)
     if info.get("gated"):
-        if gated_is_error:
-            report.add("error", subject,
-                       f"{path} is gated ({info['gated']}): every miner and validator would have to "
-                       "accept its terms by hand, or reads fail with 403. Use an ungated dataset or mirror.")
+        if is_training_source:
+            # Not an error: the owner decides whether asking every miner and
+            # validator to accept the terms is worth it. But without a login
+            # the rows cannot be read, so the row checks are skipped.
+            report.add("warning", subject,
+                       f"{path} is gated ({info['gated']}): every miner and validator must accept its "
+                       "terms on HuggingFace before the task runs. Its rows were not checked.")
             return False
         report.add("warning", subject, f"{path} is gated ({info['gated']}); the owner needs access to score it")
     return True
