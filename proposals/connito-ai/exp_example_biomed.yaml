@@ -1,0 +1,72 @@
+# EXAMPLE PULL REQUEST — do not vote, never merged.
+# It shows what a finished proposal PR looks like: this one file, plus the
+# story and checklist in the PR description. The same proposal lives in
+# examples/connito-ai/exp_biomed_pubmed.yaml.
+name: exp_example_biomed
+title: "EXAMPLE: Biomedical literature expert (PubMed + c4)"
+
+proposer:
+  github: connito-ai
+  contact: null
+
+summary: >
+  Continued pre-training on PubMed titles and abstracts, mixed half and half
+  with general web text, so the new expert reads and answers biomedical
+  questions better than the base model.
+
+motivation: >
+  Medicine is one of the domains where a small specialised model is most
+  useful and where the base model is weakest: DeepSeek-V2-Lite has seen little
+  biomedical literature. PubMed is large, clean, public and ungated, and there
+  are well-known multiple-choice benchmarks to show whether training helped.
+
+data:
+  dataset_sources:
+    # MedRAG/pubmed rather than ncbi/pubmed: the official mirror ships a loading
+    # script that current `datasets` refuses to run. `contents` is title +
+    # abstract; `content` would drop the title.
+    - path: MedRAG/pubmed
+      split: train
+      weight: 0.5
+      text_column: contents
+      license: nlm-terms
+    # Replay: the standard defence against forgetting in domain training.
+    - path: allenai/c4
+      name: en
+      split: train
+      weight: 0.5
+      text_column: text
+      license: odc-by
+  sequence_length: 1024
+
+benchmarks:
+  - name: medqa
+    harness: lm_eval
+    task: medqa_4options
+    num_fewshot: 0
+    metric: acc_norm
+    higher_is_better: true
+    dataset:
+      path: GBaker/MedQA-USMLE-4-options
+      split: test
+    why: >
+      US medical licensing exam questions: tests applying biomedical knowledge,
+      not just recognising abstract text.
+
+  - name: medmcqa
+    harness: lm_eval
+    task: medmcqa
+    num_fewshot: 0
+    metric: acc_norm
+    higher_is_better: true
+    dataset:
+      path: openlifescienceai/medmcqa
+      split: validation
+    why: >
+      Indian medical entrance exam questions across 21 subjects; a second,
+      independent exam so one benchmark's quirks do not decide the result.
+
+contamination: >
+  Neither benchmark is built from PubMed abstracts: both are exam questions
+  written by examiners. c4 is a 2019 web crawl; MedQA and MedMCQA test items
+  are not known to appear in it, and the scored splits are never trained on.
