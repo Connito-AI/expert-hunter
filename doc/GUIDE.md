@@ -193,13 +193,6 @@ Pick a benchmark that tests the skill, not the training documents themselves:
 an exam in the domain (MedQA for medicine, FinQA for finance, GSM8K for math)
 beats a test built from your training data.
 
-- **Prefer an lm-evaluation-harness task**, so results compare with published
-  numbers. Ones the experiment repo already runs include `gsm8k`,
-  `minerva_math`, `hendrycks_math`, `mmlu`, `arc_challenge`, `hellaswag`,
-  `ifeval`, `humaneval`, `mbpp`, `medqa_4options`, `medmcqa`, `pubmedqa`,
-  `cmmlu`, `kobest_boolq`, `haerae`, `xnli_zh`, `belebele`, `longbench`,
-  `ruler`, and custom `finqa`, `tatqa`, `legalbench`, `chembench`, `cti_mcqa`,
-  `matscibench`.
 - **Keep it held out.** Don't train on the split the benchmark scores (the
   check rejects the obvious case).
 - **Nothing fits?** Use `harness: eval_loss` on a held-out split of your data.
