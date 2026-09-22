@@ -23,6 +23,7 @@ summary: >
 
 # Why the subnet should spend a training window on this rather than something
 # else. Who would use the expert? What does the base model do badly today?
+# One paragraph: the full story goes in your pull request description.
 motivation: >
   ...
 
