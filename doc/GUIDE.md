@@ -170,7 +170,8 @@ make it work well on the subnet, where hundreds of machines stream it at once:
 - **It streams from the Hub.** Parquet (or sharded JSON) files load fine.
   Datasets that need a loading script (`<name>.py`) don't load with current
   `datasets`, and one huge single file is slow for every miner — prefer a
-  parquet export.
+  parquet export. Parquet also lets validators sample evaluation rows from
+  the whole dataset rather than just its first rows.
 - **The rows are real documents.** Rows under 200 characters are dropped from
   evaluation, and rows that start with the same 200 characters (boilerplate,
   templated records) are deduplicated, so short or repetitive data leaves

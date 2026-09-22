@@ -11,8 +11,31 @@ pytest                                   # offline: schema, layout, submission r
 pytest --network                         # also stream every proposal's data from the Hub
 CONNITO_SUBNET=../Connito pytest tests/test_subnet_contract.py   # exports load in the subnet
 python -m expert_hunter.check TASK --network
-python -m expert_hunter.export TASK --group-id 7 > config.yaml
+python -m expert_hunter.export TASK --group-id 7 > config.yaml             # reads the Hub
+python -m expert_hunter.export TASK --group-id 7 --offline > config.yaml   # legacy eval, no Hub
 ```
+
+## Eval sampling in an exported task
+
+`export` decides how validators sample eval rows. The subnet's **seeded shard
+pick** reaches every row of every shard over time; the legacy shuffle+skip
+path only ever reaches the first rows of each shard. Seeded pick is set per
+task, so every source needs a policy:
+
+- a built-in one (`allenai/c4` `en`, `nvidia/Nemotron-CC-Math-v1` `4plus`,
+  `joelniklaus/Multi_Legal_Pile` `all_all` — `expert_hunter.shard_table.KNOWN_SOURCES`), or
+- a shard table, `eval_shard_rows`: each file's row count at one pinned
+  commit. Export builds it for **parquet** sources by reading each file's
+  footer (seconds). JSON has no footer, so a JSON source cannot get one.
+
+If every source has one, the task gets `eval_source_seeded_shard_pick: true`,
+the tables, and a pin for every source. **Validators must be on connito v0.6.3
+or later**, which reads `eval_shard_rows`. Otherwise the task stays on the
+legacy path and the header names the source that kept it there. Shards of
+10,000 rows or fewer are left out of a table, since the subnet rejects them.
+
+A table is only valid at the commit it was counted at. If a dataset is
+re-uploaded, re-export.
 
 ## Repository settings this relies on
 

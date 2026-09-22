@@ -172,15 +172,19 @@ jobs:
         with:
           repository: Connito-AI/Connito
           path: subnet
-          sparse-checkout: connito/shared/config.py
+          sparse-checkout: |
+            connito/shared/config.py
+            connito/shared/eval_shard_pick.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -e ".[test]"
+      - run: pip install -e ".[network,test]"
       - name: Every exported proposal loads in the subnet
         env:
           CONNITO_SUBNET: ${{ github.workspace }}/subnet
         run: |
           echo "Subnet at $(git -C subnet rev-parse --short HEAD)"
-          pytest tests/test_subnet_contract.py -v -rs
+          # --network: also build a real shard table from the Hub and run it
+          # through the validator's own checks.
+          pytest tests/test_subnet_contract.py --network -v -rs
