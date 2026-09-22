@@ -24,7 +24,8 @@ owner how much support it has.
    examples: [`exp_biomed_pubmed`](examples/connito-ai/exp_biomed_pubmed.yaml)
    (plain text corpus) and
    [`exp_metamath_reasoning`](examples/connito-ai/exp_metamath_reasoning.yaml)
-   (question/answer corpus rendered by a template).
+   (question/answer corpus rendered by a template); a finished proposal PR:
+   [#4](https://github.com/Connito-AI/expert-hunter/pull/4).
 2. **Check.** Every pull request runs three checks:
    - `submission-rules` — the PR changes only one `.yaml` file, inside a folder
      named after the PR author's GitHub login. Anything else (a README, a

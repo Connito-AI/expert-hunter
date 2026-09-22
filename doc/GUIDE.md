@@ -73,6 +73,8 @@ that repeats one of these needs a good reason.
    is needed ([how](#writing-the-story)), then fill in the checklist. Anything
    longer you want to say — a custom benchmark, how you built a dataset — goes
    in the PR description too, not in extra files.
+   [PR #4](https://github.com/Connito-AI/expert-hunter/pull/4) is an example
+   of a finished proposal PR, story and all.
 6. **Watch the checks** on your PR. All three must be green before it can be
    merged ([what each one means](#the-checks-and-how-to-fix-a-failure)).
 7. **Answer comments.** People will ask questions and suggest changes. Push
@@ -97,6 +99,7 @@ request that breaks these rules, and a failing check blocks the merge.
 The YAML file says *what* to train. The story, at the top of your pull request
 description, says *why*. It is the first thing voters and the owner read, and
 a proposal without one is hard to support, however good its data is.
+[PR #4](https://github.com/Connito-AI/expert-hunter/pull/4) shows one.
 
 Write it for someone who knows the subnet but not your field. A few paragraphs
 is enough. Cover:
