@@ -1,5 +1,12 @@
 # expert-hunter
 
+> 🚀 **We're getting ready to launch our training-as-a-service (TaaS)
+> product, and we want to build it around what people actually need.** This
+> repo is our market research, done in the open: tell us which expert you
+> wish existed, and the Connito subnet may train it for real. Every
+> proposal, every 👍 and every result shapes the platform our customers will
+> use to train their own experts.
+
 **Suggest what the Connito subnet (SN102) should train next.**
 
 Every training window on the subnet trains one *expert*: a group of experts
@@ -66,3 +73,7 @@ lm-evaluation-harness task at its published few-shot count, or a held-out
 loss). What a proposal does **not** set — the group id, the expert
 assignment, batch sizes, eval gates — is decided by the owner when it is
 scheduled.
+
+## License
+
+[MIT](LICENSE). By opening a pull request you agree your proposal is shared under the same licence.

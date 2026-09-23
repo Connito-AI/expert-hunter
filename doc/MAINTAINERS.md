@@ -33,7 +33,9 @@ python -m expert_hunter.export TASK --group-id 7 > config.yaml
   and checks that every key export writes is a field the subnet declares (the
   subnet ignores unknown keys, so a rename would otherwise fail silently). When
   it goes red, the subnet changed: update `expert_hunter/export.py` and the
-  schema. It also runs every Monday.
+  schema. It runs on maintainers' pull requests, on pushes to `main`, every
+  Monday and by hand; on contributors' pull requests it is skipped (a
+  proposal cannot break it, and a red X there would only confuse them).
 
 ## Repository layout
 
