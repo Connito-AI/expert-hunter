@@ -11,8 +11,9 @@ name: Validate proposal
 # A fourth, subnet-contract, loads every proposal's exported config through the
 # subnet's own config classes (Connito-AI/Connito, master). It is NOT meant to
 # be required: when it fails, the subnet changed and export needs updating —
-# nothing a proposer can fix. It also runs weekly, so drift shows up even when
-# no one opens a PR.
+# nothing a proposer can fix. So it runs on maintainers' PRs (the ones that
+# can change export), on pushes to main, weekly and by hand — and is skipped
+# on contributors' proposal PRs, where a red X would only confuse them.
 #
 # submission-rules and data-can-run run the checker from the BASE branch
 # against the files from the PR, so a PR cannot change the code that judges
@@ -42,6 +43,7 @@ env:
   # Logins treated as maintainers whatever GitHub's author_association says:
   # an App opening PRs shows as NONE, and an org member with private
   # membership can show as CONTRIBUTOR. Add yours here if that is you.
+  # Keep in step with subnet-contract's `if` below.
   TRUSTED_AUTHORS: "connito-client-dev[bot]"
 
 jobs:
@@ -164,6 +166,12 @@ jobs:
 
   subnet-contract:
     name: subnet-contract
+    # Same maintainer test as expert_hunter.submission.is_maintainer. A job's
+    # `if` cannot read `env`, so the TRUSTED_AUTHORS logins are repeated here.
+    if: >-
+      github.event_name != 'pull_request'
+      || contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)
+      || github.event.pull_request.user.login == 'connito-client-dev[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

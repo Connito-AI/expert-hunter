@@ -1,12 +1,20 @@
 # Proposing an experiment
 
+> 🚀 **We're getting ready to launch our training-as-a-service (TaaS)
+> product, and this is where it starts.** expert-hunter is our market
+> research, done in the open: we want to learn which experts people really
+> want trained, on what data, and how they judge the result. Your proposal
+> can become a real training run on the subnet, and what we learn from it
+> goes straight into the product.
+
+Questions, or want to talk an idea through first? Come say hi on
+[Discord](https://discord.gg/NN3rTP8yn) or [X @ConnitoAI](https://x.com/ConnitoAI).
+More about us at [connito.ai](https://connito.ai); the subnet itself is
+[Connito-AI/Connito](https://github.com/Connito-AI/Connito).
+
 Have an idea for what the Connito subnet should train next? Proposing it takes
 one YAML file and one pull request. You don't need to run a miner, and you
 don't need to write a research paper.
-
-This is a **pre-alpha of our training-as-a-service platform**. Every proposal,
-and every insight from how its experiment goes, helps us build a better
-platform for the customers who will later train their own experts on it.
 
 **The short version:** idea → copy the template → fill in a few fields → open a PR.
 
@@ -277,5 +285,8 @@ folder, and credit them in the description.
 
 **Does the proposal with the most 👍 always run next?** No. The owner uses 👍
 as a reference, together with everything else in the proposal.
+
+**Where can I ask a question?** On [Discord](https://discord.gg/NN3rTP8yn),
+or in a comment on your PR.
 
 **Is my proposal public?** Yes. Don't include private links or credentials.
