@@ -7,6 +7,10 @@
 > proposal, every 👍 and every result shapes the platform our customers will
 > use to train their own experts.
 
+**[connito.ai](https://connito.ai)** · **[Discord](https://discord.gg/NN3rTP8yn)** ·
+**[X / Twitter @ConnitoAI](https://x.com/ConnitoAI)** ·
+**[Connito subnet repo](https://github.com/Connito-AI/Connito)**
+
 **Suggest what the Connito subnet (SN102) should train next.**
 
 Every training window on the subnet trains one *expert*: a group of experts
