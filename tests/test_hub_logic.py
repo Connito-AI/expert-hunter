@@ -99,9 +99,12 @@ def test_repeated_rows_fail(monkeypatch, proposal):
     assert "share their first 200" in messages(hub.check_proposal(proposal), "error")
 
 
-def test_gated_training_data_fails(monkeypatch, proposal):
+def test_gated_training_data_only_warns(monkeypatch, proposal):
     fake(monkeypatch, all_good(proposal), {"MedRAG/pubmed": {"id": "MedRAG/pubmed", "gated": "manual"}})
-    assert "is gated" in messages(hub.check_proposal(proposal), "error")
+    report = hub.check_proposal(proposal)
+    assert report.passed
+    assert "is gated" in messages(report, "warning")
+    assert "rows were not checked" in messages(report, "warning")
 
 
 def test_gated_benchmark_only_warns(monkeypatch, proposal):

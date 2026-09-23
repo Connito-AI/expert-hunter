@@ -11,16 +11,9 @@ proposer:
   github: connito-ai
   contact: null
 
-summary: >
-  Continued pre-training on PubMed titles and abstracts, mixed half and half
-  with general web text, so the new expert reads and answers biomedical
-  questions better than the base model.
-
-motivation: >
-  Medicine is one of the domains where a small specialised model is most
-  useful and where the base model is weakest: DeepSeek-V2-Lite has seen little
-  biomedical literature. PubMed is large, clean, public and ungated, and there
-  are well-known multiple-choice benchmarks to show whether training helped.
+description: >
+  Train an expert on PubMed titles and abstracts, mixed half and half with
+  general web text, to improve the medical exams MedQA and MedMCQA.
 
 data:
   dataset_sources:
@@ -39,7 +32,6 @@ data:
       weight: 0.5
       text_column: text
       license: odc-by
-  sequence_length: 1024
 
 benchmarks:
   - name: medqa
@@ -67,6 +59,16 @@ benchmarks:
     why: >
       Indian medical entrance exam questions across 21 subjects; a second,
       independent exam so one benchmark's quirks do not decide the result.
+
+hypothesis: >
+  PubMed abstracts are where the knowledge both exams test is written down:
+  drug mechanisms, how diseases present, which treatments work. The exams ask
+  the model to recall and apply exactly that.
+
+evidence: >
+  PMC-LLaMA (Wu et al., 2023) and MEDITRON (Chen et al., 2023) both continued
+  pre-training general models on biomedical literature and reported higher
+  MedQA scores.
 
 contamination: >
   Neither benchmark is built from PubMed abstracts: both are exam questions

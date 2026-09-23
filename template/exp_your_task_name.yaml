@@ -1,49 +1,36 @@
-# Copy this file to proposals/<your-github-login>/<name>.yaml and fill it in:
-#
-#   mkdir -p proposals/octocat
-#   cp template/exp_your_task_name.yaml proposals/octocat/exp_finance_reports.yaml
-#
-# Your pull request may contain that one file and nothing else.
-# doc/GUIDE.md explains every field. Delete these comments if you like.
+# The proposal template. Copy it (don't start from scratch) to
+#   proposals/<your-github-login>/exp_<task_name>.yaml
+# fill in the fields below, and open a pull request with that one file.
+# doc/GUIDE.md walks through it.
 
-# The task's name on the subnet. exp_ followed by lowercase words joined with
-# single underscores; it must match the file name (without .yaml).
+# exp_ + lowercase words joined with underscores. Same as the file name.
 name: exp_your_task_name
 
-# One line: what the expert gets good at. It is also your pull request title.
+# One line: what the expert gets good at. Also your pull request title.
 title: What the expert gets good at
 
 proposer:
-  github: your-github-handle     # your GitHub login: the same as your folder name
+  github: your-github-login       # the same as your folder name
   contact: null                   # optional: Discord handle, email, or hotkey
 
-# Two or three sentences: what the new expert would be able to do.
-summary: >
-  ...
-
-# Why the subnet should spend a training window on this rather than something
-# else. Who would use the expert? What does the base model do badly today?
-motivation: >
+# A sentence or two: what is trained, on which dataset, to improve which
+# benchmark. For example: "Train an expert on SEC filings to improve FinQA."
+description: >
   ...
 
 data:
-  # What miners train on. Same fields as cycle-api's task config.
-  # Weights must add up to 1.0. Up to four sources.
+  # What to train on: HuggingFace datasets, weights adding up to 1.0 (up to four).
   dataset_sources:
-    - path: org/dataset-name      # HuggingFace dataset id; public and NOT gated
+    - path: org/dataset-name      # the HuggingFace dataset id
       name: null                  # the dataset's config/subset, if it has several
-      split: train                # write it out even when it is `train`
+      split: train
       weight: 0.5
-      # How the rows become training text. Use ONE of these two:
-      #   text_column   — the column already is the text
-      #   text_template — join several columns, e.g. a question/answer corpus:
-      #                   text_template: "User: {question}\n\nAssistant: {answer}"
-      text_column: text
-      revision: null              # optional: a 40-character commit sha to pin
+      text_column: text           # the column holding the text; or instead, for
+                                  # a question/answer dataset, join columns:
+                                  # text_template: "User: {question}\n\nAssistant: {answer}"
       license: null               # e.g. cc-by-4.0
 
-    # Mixing in general text (c4) keeps the expert from forgetting everything
-    # else. Recommended, not required.
+    # General web text, so the expert doesn't forget everything else. Recommended.
     - path: allenai/c4
       name: en
       split: train
@@ -51,23 +38,35 @@ data:
       text_column: text
       license: odc-by
 
-  sequence_length: 1024           # 1024, 2048 or 4096
+  sequence_length: 4096           # 1024, 2048 or 4096
 
-# How we will know the trained expert is better. At least one; up to five.
+# What should improve. At least one benchmark; up to five.
 benchmarks:
   - name: my_benchmark            # a short label
     harness: lm_eval              # lm_eval (preferred) or eval_loss
     task: my_lm_eval_task         # the lm-evaluation-harness task name
-    num_fewshot: 0                # the few-shot count the benchmark is published with
+    num_fewshot: 0                # the few-shot count the benchmark is usually reported with
     metric: acc                   # the number to read, as lm-eval names it
     higher_is_better: true
-    dataset:                      # where the scored questions live
+    dataset:                      # where the benchmark's questions live
       path: org/benchmark-dataset
       name: null
       split: test
-    why: >
-      Why this benchmark measures what the expert is meant to learn.
 
-# How you know the benchmark's questions are not in the training data.
+# A few sentences: why should training on this data improve this benchmark?
+hypothesis: >
+  ...
+
+# Any research, paper or result suggesting it works? "none known" is fine.
+evidence: >
+  ...
+
+# Optional: your guess at how long to train and with what batch size.
+# The owner decides; leave these out if you have no idea.
+suggested_training:
+  steps: null
+  batch_size: null
+
+# One line: how you know the benchmark's questions are not in the training data.
 contamination: >
   ...
