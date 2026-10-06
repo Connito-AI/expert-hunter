@@ -1,0 +1,104 @@
+# MediConnito — clinical question, lab, and diagnosis support.
+# Copy of the repo template, filled in. The folder name and proposer.github
+# must be the GitHub login of the account that opens the pull request.
+name: exp_medicnnito
+title: MediConnito clinical questions, labs, and diagnosis
+
+proposer:
+  github: ThierryMT
+  contact: null
+
+description: >
+  Train MediConnito on PubMed abstracts plus public clinical case notes,
+  mixed half and half with general web text, to improve MedQA and MedMCQA:
+  reading a presentation, interpreting findings, and choosing a diagnosis.
+
+data:
+  dataset_sources:
+    # Parquet mirror of PubMed titles and abstracts. ncbi/pubmed ships a
+    # loading script that current `datasets` will not run. `contents` keeps
+    # the title with the abstract. This is a ~2.2M-abstract slice, not the
+    # full 33M MEDLINE dump.
+    - path: MedRAG/pubmed
+      split: train
+      weight: 0.25
+      text_column: contents
+      license: nlm-terms
+    # Patient summaries extracted from PubMed Central case reports (the
+    # public stand-in for bedside notes). One parquet shard, column
+    # `full_note`. MIMIC-III is the larger clinical corpus but it is
+    # PhysioNet-gated, so miners cannot stream it. Upstream PMC-Patients
+    # is CC-BY-NC-SA; this mirror is published as MIT — the stricter
+    # licence is recorded here.
+    - path: aisc-team-a1/augmented-clinical-notes
+      split: train
+      weight: 0.25
+      text_column: full_note
+      license: cc-by-nc-sa-4.0
+    # Replay, so the expert does not forget everything outside medicine.
+    - path: allenai/c4
+      name: en
+      split: train
+      weight: 0.5
+      text_column: text
+      license: odc-by
+
+  sequence_length: 4096
+
+benchmarks:
+  - name: medqa
+    harness: lm_eval
+    task: medqa_4options
+    num_fewshot: 0
+    metric: acc_norm
+    higher_is_better: true
+    dataset:
+      path: GBaker/MedQA-USMLE-4-options
+      split: test
+    why: >
+      US medical licensing questions. Many items are a short case with
+      symptoms and lab values and a request for the diagnosis or next step,
+      which is the skill MediConnito is for.
+
+  - name: medmcqa
+    harness: lm_eval
+    task: medmcqa
+    num_fewshot: 0
+    metric: acc_norm
+    higher_is_better: true
+    dataset:
+      path: openlifescienceai/medmcqa
+      split: validation
+    why: >
+      Indian medical entrance questions across 21 subjects. A second exam,
+      so one benchmark's wording does not decide the result.
+
+hypothesis: >
+  MedQA and MedMCQA do not ask the model to recite an abstract. They give a
+  presentation — symptoms, history, and often lab numbers — and ask for the
+  diagnosis or the next action. PubMed abstracts are where the mechanisms
+  and the treatments are written down. The case notes are the other half:
+  a real patient summary, the shape of text a clinician actually reads.
+  Training on both should move exam accuracy because the exams test exactly
+  that combination. General web text is half the mix so the expert keeps
+  ordinary language.
+
+evidence: >
+  PMC-LLaMA (Wu et al., 2023) and MEDITRON (Chen et al., 2023) continued
+  pre-training on biomedical literature and reported higher MedQA scores.
+  Asclepius (Kweon et al., 2023) showed that clinical-note style text, even
+  when synthesized from PMC case reports, improves clinical NLP tasks.
+  MIMIC-III (Johnson et al., 2016) is the usual hospital-note corpus for
+  this, but it is credentialed. WHO clinical guidance is the right source
+  for low-resource practice; it is not published as one streamable Hub
+  dataset, so it is not in this mix.
+
+suggested_training:
+  steps: 2000
+
+contamination: >
+  MedQA's test split and MedMCQA's validation split are examiner-written
+  questions, not rows of either training corpus, and those splits are not
+  trained on. c4 is a 2019 web crawl. The case notes are PMC patient
+  summaries, not exam items. MedQA is scored, not used as training data,
+  so the exam cannot leak in through its own train split.
